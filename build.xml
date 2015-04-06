@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+//*******************************************************************************
+// NCL Confidential
+// OCO Source Materials
+// (C) Copyright Norwegian Cruise Line Corporation Ltd., 2015.
+// 
+// The source code for this program is not published or otherwise
+// divested of its trade secrets, irrespective of what has
+// been deposited with the U.S. Copyright Office.
+//
+//***************************************************************************
+// Maintainence Log:
+//
+// Date      Src Ctrl#  Who  Description
+// 04/05/15  000002     KM   PII separation, build.xml, JUnit testcases.
+//
+// ******************************************************************************
+-->
+
+
+<project name="XML Addme summer build file" default="build" basedir=".">
+   <property environment="env"/>
+   <property name="src"          value="${basedir}/src"/>
+   <property name="classes"      value="${basedir}/classes"/>
+   <property name="jars"         value="${basedir}/jars"/>
+   <property name="lib"          value="${basedir}/lib"/>
+   <property name="javadoc"      value="${basedir}/javadoc"/>
+   <property name="zip.javadoc"  value="${basedir}/Addme_Document.zip"/>
+   <property name="addme.jar"    value="${basedir}/addme.jar"/>
+   <property name="test.jar"     value="${basedir}/addme-test.jar"/>
+   <property name="junit.jar"    value="${basedir}/lib/junit-4.12.jar"/>
+   <property name="hamcrest-core.jar" value="${basedir}/lib/hamcrest-core-1.3.jar"/>
+   <path id="build.classpath">
+      <pathelement location="${classes}"/>
+   </path>
+
+   <path id="test.classpath">
+      <pathelement location="${classes}"/>
+      <pathelement location="${test.jar}"/>
+      <pathelement location="${junit.jar}"/>
+      <pathelement location="${hamcrest-core.jar}"/>
+   </path>
+
+   <!--
+        Help target that lists the other available Ant targets for this makefile
+   -->
+   <target name="help">
+      <echo message="====================================================="/>
+      <echo message="  XML Addme summer build Ant targets:                "/>
+      <echo message="====================================================="/>
+      <echo message="  Build and package everything:            build"/>
+      <echo message="  Clean the build environment:             clean"/>
+      <echo message="  Build clean and run JUnit unit tests:    tests"/>
+      <echo message=""/>
+   </target>
+
+   <!--
+        The target that compiles all non-test java code, and packages the generated .class
+        files and resource files (.properties) to a jar file.
+   -->
+   <target name="compile">
+      <mkdir dir="${classes}"/>
+      <mkdir dir="${javadoc}"/>
+      <javac srcdir="${src}"
+             target="1.7"
+             source="1.7"
+             destdir="${classes}"
+             classpathref="build.classpath"
+             debug="true"
+             deprecation="true"
+             includeantruntime="true"
+             excludes="com/ncl/interview/tests/**"
+             optimize="false">
+      </javac>
+      <jar jarfile="${addme.jar}">
+         <fileset dir="${classes}">
+            <include name="com/ncl/interview/*.class"/>
+            <include name="com/ncl/interview/resources/*.properties"/>
+         </fileset>
+      </jar>
+      <javadoc sourcepath="${src}"
+               packagenames="com.ncl.interview"
+               classpathref="build.classpath"
+               destdir="${javadoc}"
+               version="true" 
+               use="true" 
+               windowtitle="Addme XML summer Document">
+         <link href="http://download.oracle.com/javase/7/docs/api"/>
+      </javadoc>
+      <zip destfile="${zip.javadoc}" basedir="${basedir}/javadoc"/>
+   </target>
+
+   <!--
+        The target that compiles all java code (including Unit tests), and packages the generated .class
+        files and resource files (.properties) to a jar file.
+   -->
+   <target name="compile-tests">
+      <mkdir dir="${classes}"/>
+      <mkdir dir="${javadoc}"/>
+      <javac srcdir="${src}"
+             target="1.7"
+             source="1.7"
+             destdir="${classes}"
+             classpathref="test.classpath"
+             debug="true"
+             deprecation="true"
+             includeantruntime="true"
+             optimize="false">
+      </javac>
+      <jar jarfile="${test.jar}">
+         <fileset dir="${classes}">
+            <include name="com/ncl/interview/*.class"/>
+            <include name="com/ncl/interview/tests/*.class"/>
+            <include name="com/ncl/interview/resources/*.properties"/>
+         </fileset>
+      </jar>
+      <javadoc sourcepath="${src}"
+               packagenames="com.ncl.interview"
+               classpathref="build.classpath"
+               destdir="${javadoc}"
+               version="true" 
+               use="true" 
+               windowtitle="Addme XML summer Document">
+         <link href="http://download.oracle.com/javase/7/docs/api"/>
+      </javadoc>
+      <zip destfile="${zip.javadoc}" basedir="${basedir}/javadoc"/>
+   </target>
+
+   <!--
+        The target executes the Unit tests.
+   -->
+   <target name="test">
+      <java 
+           classname="org.junit.runner.JUnitCore" 
+           fork="true"
+           failonerror="true"
+           maxmemory="128m"
+           classpathref="test.classpath"
+      >
+         <arg value="com.ncl.interview.tests.xmlAddmeSumTest"/>
+      </java>
+   </target>
+
+   <!--
+        The target that cleans up the build environment and build all non-test artifacts from scratch
+   -->
+   <target name="build" description="Clean and comple">
+      <echo message="Cleaning up..."/>
+      <ant target="clean"/>
+      <echo message="Compiling code..."/>
+      <ant target="compile"/>
+      <echo message="Build complete."/>
+   </target>
+
+   <!--
+        The target that cleans up the build environment and build all artifacts from scratch, then
+        runs unit tests.
+   -->
+   <target name="tests" description="Clean and comple">
+      <echo message="Cleaning up..."/>
+      <ant target="clean"/>
+      <echo message="Compiling code..."/>
+      <ant target="compile-tests"/>
+      <echo message="Running JUnit tests..."/>
+      <ant target="test"/>
+      <echo message="Build complete."/>
+   </target>
+
+   <!--
+        The target that deletes are artifacts produced by the previous build run, so that new build
+        can be invoked in the clean environment.
+   -->
+   <target name="clean" description="Clean the build environment">
+      <delete quiet="true" dir="${classes}"/>
+      <delete quiet="true" dir="${javadoc}"/>
+      <delete quiet="true" file="${zip.javadoc}"/>
+      <delete quiet="true" file="${addme.jar}"/>
+      <delete quiet="true" file="${test.jar}"/>
+   </target>
+</project>
